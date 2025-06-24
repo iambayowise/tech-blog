@@ -47,7 +47,7 @@ jobs:
         run: |
           aws s3 sync ./public/ s3://${{ secrets.AWS_BUCKET_NAME }} --delete
 
-        - name: Create Cloudfront Invalidation
+      - name: Create Cloudfront Invalidation
           run:|
              aws cloudfront create-invalidation \
              --distrubution-id ${{ secret.DISTRIBUTION_ID }} \
