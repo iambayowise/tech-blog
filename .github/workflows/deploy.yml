@@ -4,11 +4,16 @@ on:
   push:
     branches:
       - main
+permission:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+        
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,18 +24,31 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: '0.119.0'
+          hugo-version: '0.135.0'
           extended: true
 
       - name: Build
         run: hugo --minify
 
-      - name: Configure AWS credentials from AssumeRole with OIDC
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Upload Build Artifact
+        uses: action/upload-artifact@v4
         with:
+            name: tech-blog
+            path: public/**
+
+      - name: Configure AWS credentials from AssumeRole with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          audience: sts.amazonaws.com
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Sync files to S3
         run: |
-          aws s3 sync public/ s3://${{ secrets.AWS_BUCKET_NAME }} --delete
+          aws s3 sync ./public/ s3://${{ secrets.AWS_BUCKET_NAME }} --delete
+
+        - name: Create Cloudfront Invalidation
+          run:|
+             aws cloudfront create-invalidation \
+             --distrubution-id ${{ secret.DISTRIBUTION_ID }} \
+             --paths "/*"
