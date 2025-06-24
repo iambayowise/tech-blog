@@ -1,7 +1,7 @@
 +++
 title = "You are a Cloud Talent! 🚀"
-date = 2024-10-07T23:45:27+02:00
-author = "Fernando Gonçalves"
+date = 2025-06-21T05:08:27+02:00
+author = "Adebayo Adeyeye"
 draft = false
 +++
 
